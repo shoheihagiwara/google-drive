@@ -25,8 +25,10 @@ def main():
     # get token if not already.
     creds = store.get()
     if not creds or creds.invalid:
+        print("credential not valie or found. Getting one now.")
         flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
         creds = tools.run_flow(flow, store)
+        print("credential retrieved.")
 
     # build service
     service = build('drive', 'v3', http=creds.authorize(Http()))
@@ -38,6 +40,7 @@ def main():
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
     done = False
+    print("Downloading file for md5sum check.")
     while done is False:
         status, done = downloader.next_chunk()
         print("Download %d%%." % int(status.progress() * 100))
@@ -50,8 +53,8 @@ def main():
     with open(".aaa.txt", 'rb') as org_file:
         org_checksum = hashlib.md5(org_file.read()).hexdigest()
 
-    print("checksum: " + checksum)
-    print("org_checksum: " + org_checksum)
+    print("checksum of file on Google Drive: " + checksum)
+    print("checksum of copy on local: " + org_checksum)
     print(type(checksum))
     print(checksum == org_checksum)
     if checksum == org_checksum:
@@ -62,6 +65,8 @@ def main():
              print("Upload successful.")
          else:
              print("Something went wrong with upload...")
+    else:
+         print("checksums do not match. Exiting with no upload.")
 
 if __name__ == '__main__':
     main()
