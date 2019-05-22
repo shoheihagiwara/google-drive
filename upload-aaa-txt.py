@@ -1,3 +1,5 @@
+#/usr/bin/env python3
+# -*- encoding: utf-8 -*- 
 from __future__ import print_function
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
@@ -6,8 +8,10 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 import io
 import hashlib
+import shutil
 
-myFileId = "0B-ioCteW0EKSeVlmQmxCTURzVG8"
+# aaa.txt's file ID
+aaaTxtFileId = "0B-ioCteW0EKSeVlmQmxCTURzVG8"
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly', \
@@ -34,7 +38,7 @@ def main():
     service = build('drive', 'v3', http=creds.authorize(Http()))
 
     # make a request to get aaa.txt
-    request = service.files().get_media(fileId=myFileId)
+    request = service.files().get_media(fileId=aaaTxtFileId)
 
     # make a byte reader and set it up to read bytes from response
     fh = io.BytesIO()
@@ -58,11 +62,13 @@ def main():
     print(type(checksum))
     print(checksum == org_checksum)
     if checksum == org_checksum:
+         print("checksums matched!")
          media = MediaFileUpload("aaa.txt")
-         results = service.files().update(fileId=myFileId, media_body=media, fields="id").execute()
-         #print(results)
+         results = service.files().update(fileId=aaaTxtFileId, media_body=media, fields="id").execute()
          if results:
              print("Upload successful.")
+             shutil.copy2("aaa.txt", ".aaa.txt")
+             print("copied aaa.txt to .aaa.txt")
          else:
              print("Something went wrong with upload...")
     else:
